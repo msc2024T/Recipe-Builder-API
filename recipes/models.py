@@ -4,13 +4,14 @@ from django.contrib.auth.models import User as AuthUser
 
 class Recipe(models.Model):
     title = models.CharField(max_length=255)
-    image = models.ImageField(blank=True, null=True)
+    image_path = models.URLField(blank=True, null=True)
     instructions = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         AuthUser, on_delete=models.CASCADE, related_name='recipes'
     )
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -23,7 +24,7 @@ class Recipe(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(max_length=100)
     unit = models.CharField(max_length=50)
-    image = models.ImageField(blank=True, null=True)
+    image_path = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
