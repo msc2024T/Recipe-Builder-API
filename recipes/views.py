@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RecipeSerializer
-from .services import RecipeService
+from .serializers import RecipeSerializer, IngredientSerializer
+from .services import RecipeService, IngredientService
 
 
 class RecipeView(APIView):
@@ -68,5 +68,74 @@ class RecipeDetailView(APIView):
                 return Response({'message': 'Recipe deleted successfully'}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Failed to delete recipe"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+
+class IngredientView(APIView):
+
+    def get(self, request):
+
+        service = IngredientService()
+        ingredients = service.get_ingredient_list()
+        serializer = IngredientSerializer(ingredients, many=True)
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = IngredientSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                service = IngredientService()
+                created_ingredient = service.create_ingredient(
+                    name=serializer.validated_data['name'],
+                    unit=serializer.validated_data['unit'],
+                    image_path=serializer.validated_data.get('image_path'),
+                    created_by=request.user
+                )
+                serialized_ingredient = IngredientSerializer(
+                    created_ingredient).data
+                return Response({'data': serialized_ingredient, 'message': 'Ingredient created successfully'}, status=status.HTTP_201_CREATED)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IngredientDetailView(APIView):
+
+    def get(self, request, ingredient_id):
+        try:
+            service = IngredientService()
+            ingredient = service.get_ingredient_by_id(ingredient_id)
+            serializer = IngredientSerializer(ingredient)
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, ingredient_id):
+        serializer = IngredientSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                service = IngredientService()
+                updated_ingredient = service.update_ingredient(
+                    ingredient_id=ingredient_id,
+                    name=serializer.validated_data['name'],
+                    unit=serializer.validated_data['unit'],
+                    image_path=serializer.validated_data.get('image_path'),
+                )
+                serialized_ingredient = IngredientSerializer(
+                    updated_ingredient).data
+                return Response({'data': serialized_ingredient, 'message': 'Ingredient updated successfully'}, status=status.HTTP_200_OK)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, ingredient_id):
+        try:
+            service = IngredientService()
+            result = service.delete_ingredient(ingredient_id)
+            if result is True:
+                return Response({'message': 'Ingredient deleted successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Failed to delete ingredient"}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)

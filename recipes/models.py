@@ -31,6 +31,8 @@ class Ingredient(models.Model):
         AuthUser, on_delete=models.CASCADE, related_name='ingredients'
     )
 
+    is_deleted = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.name} ({self.unit})"
 
