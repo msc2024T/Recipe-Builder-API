@@ -34,3 +34,9 @@ class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ['ingredient_id', 'quantity']
+
+
+class RecipeIngredientUpdateSerializer(serializers.ModelSerializer):
+
+    recipe_ingredient_id = serializers.IntegerField()
+    quantity = serializers.FloatField()

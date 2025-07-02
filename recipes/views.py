@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RecipeSerializer, IngredientSerializer
-from .services import RecipeService, IngredientService, RecipeIngredientSerializer, RecipeIngredientCreateSerializer
+from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientService
+from .services import RecipeService, IngredientService, RecipeIngredientSerializer, RecipeIngredientCreateSerializer, RecipeIngredientUpdateSerializer
 
 
 class RecipeView(APIView):
@@ -143,14 +143,15 @@ class IngredientDetailView(APIView):
 
 class RecipeIngredientView(APIView):
 
-    def post(self, request):
+    def post(self, request, recipe_id):
         serializer = RecipeIngredientCreateSerializer(
             data=request.data, many=True)
         if serializer.is_valid():
             try:
-                service = RecipeService()
+                service = RecipeIngredientService()
                 created_recipe_ingredient = service.create_recipe_ingredient(
-                    data=serializer.validated_data,
+                    recipe_id=recipe_id,
+                    ingredient_list=serializer.validated_data,
                     created_by=request.user
                 )
                 serialized_recipe_ingredient = RecipeIngredientSerializer(
@@ -158,3 +159,66 @@ class RecipeIngredientView(APIView):
                 return Response({'data': serialized_recipe_ingredient, 'message': 'Recipe ingredient created successfully'}, status=status.HTTP_201_CREATED)
             except ValueError as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, recipe_id):
+        try:
+            service = RecipeIngredientService()
+            recipe_ingredients = service.get_recipe_ingredients_by_recipe_id(
+                recipe_id)
+            serializer = RecipeIngredientSerializer(
+                recipe_ingredients, many=True)
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, recipe_id):
+        try:
+            recipe_ingredient_id = request.query_params.get(
+                'recipe_ingredient_id')
+            if not recipe_ingredient_id:
+                return Response({"error": "recipe_ingredient_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            service = RecipeIngredientService()
+            result = service.delete_recipe_ingredient(recipe_ingredient_id)
+            if result is True:
+                return Response({'message': 'Recipe ingredients deleted successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Failed to delete recipe ingredients"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, recipe_id):
+
+        serializer = RecipeIngredientUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                service = RecipeIngredientService()
+                updated_recipe_ingredient = service.update_recipe_ingredient(
+                    recipe_ingredient_id=serializer.validated_data['recipe_ingredient_id'],
+                    quantity=serializer.validated_data['quantity']
+                )
+                serialized_recipe_ingredient = RecipeIngredientSerializer(
+                    updated_recipe_ingredient).data
+                return Response({'data': serialized_recipe_ingredient, 'message': 'Recipe ingredient updated successfully'}, status=status.HTTP_200_OK)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddSingleRecipeIngredientView(APIView):
+
+    def post(self, request, recipe_id):
+        serializer = RecipeIngredientCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                service = RecipeIngredientService()
+                created_recipe_ingredient = service.add_ingredient_to_recipe(
+                    recipe_id=recipe_id,
+                    ingredient_id=serializer.validated_data['ingredient_id'],
+                    quantity=serializer.validated_data['quantity'],
+                    created_by=request.user
+                )
+                serialized_recipe_ingredient = RecipeIngredientSerializer(
+                    created_recipe_ingredient).data
+                return Response({'data': serialized_recipe_ingredient, 'message': 'Recipe ingredient created successfully'}, status=status.HTTP_201_CREATED)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
