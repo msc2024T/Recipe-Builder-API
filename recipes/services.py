@@ -105,3 +105,89 @@ class IngredientService:
             return ingredient
         except Ingredient.DoesNotExist:
             raise ValueError("Ingredient not found")
+
+
+class RecipeIngredientService:
+    def create_recipe_ingredient(self, recipe_id, ingredient_list, created_by=None):
+
+        if created_by is None or not isinstance(created_by, AuthUser):
+            raise ValueError("A valid user must be provided")
+
+        recipe = RecipeService().get_recipe_by_id(recipe_id)
+        recipe_ingredient_list = []
+
+        for item in ingredient_list:
+
+            ingredient = IngredientService().get_ingredient_by_id(
+                item['ingredient_id'])
+            quantity = item['quantity']
+            recipe_ingredient = RecipeIngredient(
+                recipe=recipe,
+                ingredient=ingredient,
+                quantity=quantity,
+                created_by=created_by)
+
+            recipe_ingredient_list.append(recipe_ingredient)
+
+        return RecipeIngredient.objects.bulk_create(recipe_ingredient_list)
+
+    def get_recipe_ingredient_list(self, recipe_id):
+
+        try:
+            return RecipeIngredient.objects.filter(
+                recipe_id=recipe_id, is_deleted=False).order_by('-created_at')
+        except RecipeIngredient.DoesNotExist:
+            raise ValueError("Recipe ingredients not found")
+
+    def delete_recipe_ingredient(self, recipe_ingredient_id):
+
+        recipe_ingredient = RecipeIngredient.objects.filter(
+            id=recipe_ingredient_id, is_deleted=False).first()
+        if not recipe_ingredient:
+            raise ValueError("Recipe ingredient not found")
+        recipe_ingredient.is_deleted = True
+        recipe_ingredient.save()
+        return True
+
+    def update_recipe_ingredient(self, recipe_ingredient_id, quantity):
+        try:
+            recipe_ingredient = self.get_recipe_ingredient_by_id(
+                recipe_ingredient_id)
+            recipe_ingredient.quantity = quantity
+            recipe_ingredient.save()
+            return recipe_ingredient
+        except RecipeIngredient.DoesNotExist:
+            raise ValueError("Recipe ingredient not found")
+
+    def get_recipe_ingredient_by_id(self, recipe_ingredient_id):
+        try:
+            return RecipeIngredient.objects.get(
+                id=recipe_ingredient_id, is_deleted=False)
+        except RecipeIngredient.DoesNotExist:
+            raise ValueError("Recipe ingredient not found")
+
+    def add_ingredient_to_recipe(self, recipe_id, ingredient_id, quantity, created_by=None):
+        if created_by is None or not isinstance(created_by, AuthUser):
+            raise ValueError("A valid user must be provided")
+        recipe = RecipeService().get_recipe_by_id(recipe_id)
+        ingredient = IngredientService().get_ingredient_by_id(ingredient_id)
+
+        existing_item = RecipeIngredient.objects.filter(
+            recipe=recipe, ingredient=ingredient).exists()
+
+        if existing_item:
+            existing_item.quantity = quantity
+            existing_item.is_deleted = False
+            existing_item.created_by = created_by
+            existing_item.save()
+            return existing_item
+
+        else:
+            recipe_ingredient = RecipeIngredient(
+                recipe=recipe,
+                ingredient=ingredient,
+                quantity=quantity,
+                created_by=created_by
+            )
+            recipe_ingredient.save()
+            return recipe_ingredient

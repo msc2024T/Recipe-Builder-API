@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import RecipeSerializer, IngredientSerializer
-from .services import RecipeService, IngredientService
+from .services import RecipeService, IngredientService, RecipeIngredientSerializer, RecipeIngredientCreateSerializer
 
 
 class RecipeView(APIView):
@@ -139,3 +139,22 @@ class IngredientDetailView(APIView):
                 return Response({"error": "Failed to delete ingredient"}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+
+
+class RecipeIngredientView(APIView):
+
+    def post(self, request):
+        serializer = RecipeIngredientCreateSerializer(
+            data=request.data, many=True)
+        if serializer.is_valid():
+            try:
+                service = RecipeService()
+                created_recipe_ingredient = service.create_recipe_ingredient(
+                    data=serializer.validated_data,
+                    created_by=request.user
+                )
+                serialized_recipe_ingredient = RecipeIngredientSerializer(
+                    created_recipe_ingredient, many=True).data
+                return Response({'data': serialized_recipe_ingredient, 'message': 'Recipe ingredient created successfully'}, status=status.HTTP_201_CREATED)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
