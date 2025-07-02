@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RecipeSerializer, IngredientSerializer, RecipeIngredientService
-from .services import RecipeService, IngredientService, RecipeIngredientSerializer, RecipeIngredientCreateSerializer, RecipeIngredientUpdateSerializer
+from .serializers import RecipeSerializer, IngredientSerializer,  RecipeIngredientSerializer, RecipeIngredientCreateSerializer, RecipeIngredientUpdateSerializer
+from .services import RecipeService, IngredientService, RecipeIngredientService
 
 
 class RecipeView(APIView):
@@ -163,7 +163,7 @@ class RecipeIngredientView(APIView):
     def get(self, request, recipe_id):
         try:
             service = RecipeIngredientService()
-            recipe_ingredients = service.get_recipe_ingredients_by_recipe_id(
+            recipe_ingredients = service.get_recipe_ingredient_list(
                 recipe_id)
             serializer = RecipeIngredientSerializer(
                 recipe_ingredients, many=True)

@@ -52,6 +52,7 @@ class RecipeIngredient(models.Model):
     created_by = models.ForeignKey(
         AuthUser, on_delete=models.CASCADE, related_name='recipe_ingredients'
     )
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.quantity} {self.ingredient.unit} of {self.ingredient.name} in {self.recipe.title}"
