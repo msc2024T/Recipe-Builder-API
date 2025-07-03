@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import MealPlanSerializer
-from .services import MealPlanService
+from .serializers import MealPlanSerializer, MealPlanRecipeSerializer
+from .services import MealPlanService, MealPlanRecipeService
 
 
 class MealPlanView(APIView):
@@ -69,5 +69,54 @@ class MealPlanDetailView(APIView):
             if is_deleted is True:
                 return Response({"message": "Meal plan deleted successfully"}, status=status.HTTP_200_OK)
 
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MealPlanRecipeView(APIView):
+
+    def get(self, request, meal_plan_id):
+        """
+        Retrieves the recipes for a specific meal plan.
+        """
+        try:
+            service = MealPlanRecipeService(user=request.user)
+            meal_plan_recipes = service.get_meal_plan_recipes(meal_plan_id)
+            serializer = MealPlanRecipeSerializer(meal_plan_recipes, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request, meal_plan_id):
+        """
+        Adds a recipe to a meal plan.
+        """
+        serializer = MealPlanRecipeSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            try:
+                service = MealPlanRecipeService(user=request.user)
+                meal_plan_recipe = service.add_recipe_to_meal_plan(
+                    meal_plan_id=meal_plan_id,
+                    list=serializer.validated_data,
+                )
+                return Response(MealPlanRecipeSerializer(meal_plan_recipe, many=True).data, status=status.HTTP_201_CREATED)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, meal_plan_id):
+        """
+        Deletes a recipe from a meal plan.
+        """
+        meal_plan_recipe_id = request.query_params.get('meal_plan_recipe_id')
+        if not meal_plan_recipe_id:
+            return Response({"error": "meal_plan_recipe_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            service = MealPlanRecipeService(user=request.user)
+            is_deleted = service.delete_meal_plan_recipe(meal_plan_recipe_id)
+            if is_deleted:
+                return Response({"message": "Meal plan recipe deleted successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Failed to delete meal plan recipe"}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

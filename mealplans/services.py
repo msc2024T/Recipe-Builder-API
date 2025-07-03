@@ -1,4 +1,5 @@
-from .models import MealPlan
+from .models import MealPlan, MealPlanRecipe
+from recipes.services import RecipeService
 
 
 class MealPlanService:
@@ -78,3 +79,85 @@ class MealPlanService:
             return meal_plan
         except ValueError as e:
             raise ValueError(f"Failed to update meal plan: {str(e)}")
+
+
+class MealPlanRecipeService:
+    def __init__(self, user=None):
+        if user is None:
+            raise ValueError("User must be provided")
+        self.user = user
+
+    def add_recipe_to_meal_plan(self, meal_plan_id, list):
+        """
+        Adds a recipe to a meal plan.
+        """
+        if not meal_plan_id or not list:
+            raise ValueError("Meal plan ID and recipe list are required.")
+
+        result = []
+        meal_plan = MealPlanService(
+            self.user).get_meal_plan_by_id(meal_plan_id)
+
+        for item in list:
+            recipe_id = item.get('recipe_id')
+            meal_type = item.get('meal_type')
+
+            if not recipe_id or meal_type is None:
+                raise ValueError(
+                    "Recipe ID and meal type are required for each item.")
+
+            recipe = RecipeService().get_recipe_by_id(recipe_id)
+
+            # Check if the recipe already exists in the meal plan
+            existing_item = MealPlanRecipe.objects.filter(
+                meal_plan=meal_plan,
+                recipe=recipe,
+                meal_type=meal_type,
+                is_deleted=False
+            ).first()
+
+            if existing_item:
+                existing_item.is_deleted = False
+                existing_item.save()
+                result.append(existing_item)
+            else:
+                # Create a new MealPlanRecipe entry if it doesn't exist
+                meal_plan_recipe = MealPlanRecipe.objects.create(
+                    meal_plan=meal_plan,
+                    recipe=recipe,
+                    meal_type=meal_type,
+                    created_by=self.user
+                )
+                result.append(meal_plan_recipe)
+
+        return result
+
+    def get_meal_plan_recipes(self, meal_plan_id):
+        """
+        Retrieves the recipes for a specific meal plan.
+        """
+        meal_plan = MealPlanService(
+            self.user).get_meal_plan_by_id(meal_plan_id)
+
+        meal_plan_recipes = MealPlanRecipe.objects.filter(
+            meal_plan=meal_plan, is_deleted=False
+        ).select_related('recipe')
+
+        if not meal_plan_recipes:
+            raise ValueError("No recipes found for the specified meal plan.")
+
+        return meal_plan_recipes
+
+    def delete_meal_plan_recipe(self, meal_plan_recipe_id):
+        """
+        Deletes a meal plan recipe by its ID.
+        """
+        try:
+            meal_plan_recipe = MealPlanRecipe.objects.get(
+                id=meal_plan_recipe_id, created_by=self.user, is_deleted=False)
+            meal_plan_recipe.is_deleted = True
+            meal_plan_recipe.save()
+            return True
+        except MealPlanRecipe.DoesNotExist:
+            raise ValueError(
+                "Meal plan recipe not found or does not belong to the user.")
