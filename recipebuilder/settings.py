@@ -2,6 +2,8 @@
 import environ
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url
+import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -94,16 +96,25 @@ WSGI_APPLICATION = 'recipebuilder.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT'),
+if 'AZURE_POSTGRESQL_CONNECTIONSTRING' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            env('AZURE_POSTGRESQL_CONNECTIONSTRING'),
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+        }
+    }
 
 
 # Password validation
