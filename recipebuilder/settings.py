@@ -26,6 +26,8 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')
 
+CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS').split(',')
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'corsheaders',
     'users',
     'recipes',
     'mealplans'
@@ -63,6 +66,7 @@ SIMPLE_JWT = {
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
