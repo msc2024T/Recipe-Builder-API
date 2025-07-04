@@ -4,6 +4,9 @@ asgiref==3.8.1 ; python_version >= "3.11" and python_version < "4" \
 dj-database-url==3.0.1 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:43950018e1eeea486bf11136384aec0fe55b29fe6fd8a44553231b85661d9383 \
     --hash=sha256:8994961efb888fc6bf8c41550870c91f6f7691ca751888ebaa71442b7f84eff8
+django-cors-headers==4.7.0 ; python_version >= "3.11" and python_version < "4" \
+    --hash=sha256:6fdf31bf9c6d6448ba09ef57157db2268d515d94fc5c89a0a1028e1fc03ee52b \
+    --hash=sha256:f1c125dcd58479fe7a67fe2499c16ee38b81b397463cf025f0e2c42937421070
 django-environ==0.12.0 ; python_version >= "3.11" and python_version < "4" \
     --hash=sha256:227dc891453dd5bde769c3449cf4a74b6f2ee8f7ab2361c93a07068f4179041a \
     --hash=sha256:92fb346a158abda07ffe6eb23135ce92843af06ecf8753f43adf9d2366dcc0ca
