@@ -1,9 +1,10 @@
 from .models import Recipe, Ingredient, RecipeIngredient
 from django.contrib.auth.models import User as AuthUser
+from images.services import ImageService
 
 
 class RecipeService:
-    def create_recipe(self, title, instructions, image_path=None, created_by=None):
+    def create_recipe(self, title, instructions, image_id=None, created_by=None):
         if not title or not instructions:
             raise ValueError("Title and instructions are required")
 
@@ -17,18 +18,35 @@ class RecipeService:
         recipe = Recipe(
             title=title,
             instructions=instructions,
-            image_path=image_path,
+            image_id=image_id,
             created_by=created_by
         )
         recipe.save()
+
+        image_service = ImageService(created_by)
+        image_url = image_service.get_image_url(image_id) if image_id else None
+
+        recipe.image_url = image_url
         return recipe
 
     def get_recipe_list(self):
-        return Recipe.objects.filter(is_deleted=False).order_by('-created_at')
+
+        list = Recipe.objects.filter(is_deleted=False).order_by('-created_at')
+        for recipe in list:
+            image_service = ImageService(recipe.created_by)
+            recipe.image_url = image_service.get_image_url(
+                recipe.image_id) if recipe.image_id else None
+
+        return list
 
     def get_recipe_by_id(self, recipe_id):
         try:
-            return Recipe.objects.get(id=recipe_id, is_deleted=False)
+            recipe = Recipe.objects.get(id=recipe_id, is_deleted=False)
+            image_service = ImageService(recipe.created_by)
+            recipe.image_url = image_service.get_image_url(
+                recipe.image_id) if recipe.image_id else None
+            return recipe
+
         except Recipe.DoesNotExist:
             raise ValueError("Recipe not found")
 
@@ -41,12 +59,12 @@ class RecipeService:
         except Recipe.DoesNotExist:
             raise ValueError("Recipe not found")
 
-    def update_recipe(self, recipe_id, title, instructions, image_path=None):
+    def update_recipe(self, recipe_id, title, instructions, image_id=None):
         try:
             recipe = Recipe.objects.get(id=recipe_id, is_deleted=False)
             recipe.title = title
             recipe.instructions = instructions
-            recipe.image_path = image_path
+            recipe.image_id = image_id
             recipe.save()
             return recipe
         except Recipe.DoesNotExist:

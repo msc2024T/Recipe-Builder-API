@@ -4,10 +4,13 @@ from users.serializers import UserSerializer
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    image_id = serializers.IntegerField(write_only=True, required=False)
+
     class Meta:
         model = Recipe
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at', 'created_by']
+        read_only_fields = ['id', 'created_at',
+                            'updated_at', 'created_by', 'image', 'image_url']
 
 
 class IngredientSerializer(serializers.ModelSerializer):
