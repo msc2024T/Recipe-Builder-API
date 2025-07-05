@@ -21,7 +21,7 @@ class RecipeView(APIView):
                 created_recipe = service.create_recipe(
                     title=serializer.validated_data['title'],
                     instructions=serializer.validated_data['instructions'],
-                    image_path=serializer.validated_data.get('image_path'),
+                    image_id=serializer.validated_data.get('image_id'),
                     created_by=request.user
                 )
                 serialized_recipe = RecipeSerializer(created_recipe).data
