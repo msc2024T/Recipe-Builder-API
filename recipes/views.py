@@ -89,7 +89,7 @@ class IngredientView(APIView):
                 created_ingredient = service.create_ingredient(
                     name=serializer.validated_data['name'],
                     unit=serializer.validated_data['unit'],
-                    image_path=serializer.validated_data.get('image_path'),
+                    image_id=serializer.validated_data.get('image_id'),
                     created_by=request.user
                 )
                 serialized_ingredient = IngredientSerializer(

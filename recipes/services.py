@@ -65,6 +65,9 @@ class RecipeService:
             recipe.title = title
             recipe.instructions = instructions
             recipe.image_id = image_id
+            image_service = ImageService(recipe.created_by)
+            recipe.image_url = image_service.get_image_url(
+                image_id) if image_id else None
             recipe.save()
             return recipe
         except Recipe.DoesNotExist:
@@ -72,7 +75,7 @@ class RecipeService:
 
 
 class IngredientService:
-    def create_ingredient(self, name, unit, image_path=None, created_by=None):
+    def create_ingredient(self, name, unit, image_id=None, created_by=None):
         if not name or not unit:
             raise ValueError("Name and unit are required")
 
@@ -87,18 +90,38 @@ class IngredientService:
         ingredient = Ingredient(
             name=name,
             unit=unit,
-            image_path=image_path,
+            image_id=image_id,
             created_by=created_by
         )
         ingredient.save()
+
+        image_service = ImageService(created_by)
+        image_url = image_service.get_image_url(image_id) if image_id else None
+
+        ingredient.image_url = image_url
+
         return ingredient
 
     def get_ingredient_list(self):
-        return Ingredient.objects.filter(is_deleted=False).order_by('-created_at')
+
+        list = Ingredient.objects.filter(
+            is_deleted=False).order_by('-created_at')
+        for ingredient in list:
+            image_service = ImageService(ingredient.created_by)
+            ingredient.image_url = image_service.get_image_url(
+                ingredient.image_id) if ingredient.image_id else None
+        return list
 
     def get_ingredient_by_id(self, ingredient_id):
         try:
-            return Ingredient.objects.get(id=ingredient_id, is_deleted=False)
+            ingredient = Ingredient.objects.get(
+                id=ingredient_id, is_deleted=False)
+            image_service = ImageService(ingredient.created_by)
+            ingredient.image_url = image_service.get_image_url(
+                ingredient.image_id) if ingredient.image_id else None
+
+            return ingredient
+
         except Ingredient.DoesNotExist:
             raise ValueError("Ingredient not found")
 
@@ -112,13 +135,16 @@ class IngredientService:
         except Ingredient.DoesNotExist:
             raise ValueError("Ingredient not found")
 
-    def update_ingredient(self, ingredient_id, name, unit, image_path=None):
+    def update_ingredient(self, ingredient_id, name, unit, image_id=None):
         try:
             ingredient = Ingredient.objects.get(
                 id=ingredient_id, is_deleted=False)
             ingredient.name = name
             ingredient.unit = unit
-            ingredient.image_path = image_path
+            ingredient.image_id = image_id
+            image_service = ImageService(ingredient.created_by)
+            ingredient.image_url = image_service.get_image_url(
+                image_id) if image_id else None
             ingredient.save()
             return ingredient
         except Ingredient.DoesNotExist:

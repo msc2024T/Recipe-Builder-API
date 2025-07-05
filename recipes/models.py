@@ -26,7 +26,8 @@ class Recipe(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(max_length=100)
     unit = models.CharField(max_length=50)
-    image_path = models.URLField(blank=True, null=True)
+    image = models.ForeignKey(
+        Image, on_delete=models.CASCADE, related_name='ingredients', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
