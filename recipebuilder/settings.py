@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'recipes',
-    'mealplans'
+    'mealplans',
+    'images',
 ]
 
 

@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
+from images.models import Image
 
 
 class Recipe(models.Model):
     title = models.CharField(max_length=255)
-    image_path = models.URLField(blank=True, null=True)
+    image = models.ForeignKey(
+        Image, on_delete=models.CASCADE, related_name='recipes', blank=True, null=True)
     instructions = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
