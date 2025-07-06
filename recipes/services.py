@@ -170,6 +170,9 @@ class RecipeIngredientService:
                 ingredient=ingredient,
                 quantity=quantity,
                 created_by=created_by)
+            image_service = ImageService(created_by)
+            recipe_ingredient.image_url = image_service.get_image_url(
+                ingredient.image_id) if ingredient.image_id else None
 
             recipe_ingredient_list.append(recipe_ingredient)
 
@@ -178,8 +181,13 @@ class RecipeIngredientService:
     def get_recipe_ingredient_list(self, recipe_id):
 
         try:
-            return RecipeIngredient.objects.filter(
+            list = RecipeIngredient.objects.filter(
                 recipe_id=recipe_id, is_deleted=False).order_by('-created_at')
+            for recipe_ingredient in list:
+                image_service = ImageService(recipe_ingredient.created_by)
+                recipe_ingredient.image_url = image_service.get_image_url(
+                    recipe_ingredient.ingredient.image_id) if recipe_ingredient.ingredient.image_id else None
+            return list
         except RecipeIngredient.DoesNotExist:
             raise ValueError("Recipe ingredients not found")
 
@@ -199,14 +207,23 @@ class RecipeIngredientService:
                 recipe_ingredient_id)
             recipe_ingredient.quantity = quantity
             recipe_ingredient.save()
+            image_service = ImageService(recipe_ingredient.created_by)
+            recipe_ingredient.image_url = image_service.get_image_url(
+                recipe_ingredient.ingredient.image_id) if recipe_ingredient.ingredient.image_id else None
+
             return recipe_ingredient
         except RecipeIngredient.DoesNotExist:
             raise ValueError("Recipe ingredient not found")
 
     def get_recipe_ingredient_by_id(self, recipe_ingredient_id):
         try:
-            return RecipeIngredient.objects.get(
+            recipe_ingredient = RecipeIngredient.objects.get(
                 id=recipe_ingredient_id, is_deleted=False)
+            image_service = ImageService(recipe_ingredient.created_by)
+            recipe_ingredient.image_url = image_service.get_image_url(
+                recipe_ingredient.ingredient.image_id) if recipe_ingredient.ingredient.image_id else None
+            return recipe_ingredient
+
         except RecipeIngredient.DoesNotExist:
             raise ValueError("Recipe ingredient not found")
 
@@ -224,6 +241,10 @@ class RecipeIngredientService:
             existing_item.is_deleted = False
             existing_item.created_by = created_by
             existing_item.save()
+            image_service = ImageService(created_by)
+            existing_item.image_url = image_service.get_image_url(
+                ingredient.image_id) if ingredient.image_id else None
+
             return existing_item
 
         else:
@@ -234,4 +255,8 @@ class RecipeIngredientService:
                 created_by=created_by
             )
             recipe_ingredient.save()
+            image_service = ImageService(created_by)
+            recipe_ingredient.image_url = image_service.get_image_url(
+                ingredient.image_id) if ingredient.image_id else None
+
             return recipe_ingredient
