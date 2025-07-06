@@ -6,6 +6,7 @@ from users.serializers import UserSerializer
 class RecipeSerializer(serializers.ModelSerializer):
     image_id = serializers.IntegerField(write_only=True, required=False)
     image_url = serializers.CharField(read_only=True, allow_null=True)
+    created_by = UserSerializer(read_only=True)
 
     class Meta:
         model = Recipe
@@ -17,6 +18,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 class IngredientSerializer(serializers.ModelSerializer):
     image_id = serializers.IntegerField(write_only=True, required=False)
     image_url = serializers.CharField(read_only=True, allow_null=True)
+    created_by = UserSerializer(read_only=True)
 
     class Meta:
         model = Ingredient
