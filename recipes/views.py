@@ -51,7 +51,7 @@ class RecipeDetailView(APIView):
                     recipe_id=recipe_id,
                     title=serializer.validated_data['title'],
                     instructions=serializer.validated_data['instructions'],
-                    image_path=serializer.validated_data.get('image_path'),
+                    image_id=serializer.validated_data.get('image_id'),
 
                 )
                 serialized_recipe = RecipeSerializer(updated_recipe).data
@@ -120,7 +120,7 @@ class IngredientDetailView(APIView):
                     ingredient_id=ingredient_id,
                     name=serializer.validated_data['name'],
                     unit=serializer.validated_data['unit'],
-                    image_path=serializer.validated_data.get('image_path'),
+                    image_id=serializer.validated_data.get('image_id'),
                 )
                 serialized_ingredient = IngredientSerializer(
                     updated_ingredient).data
