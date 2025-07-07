@@ -1,5 +1,6 @@
 from .models import MealPlan, MealPlanRecipe
 from recipes.services import RecipeService
+from images.services import ImageService
 
 
 class MealPlanService:
@@ -141,6 +142,14 @@ class MealPlanRecipeService:
         meal_plan_recipes = MealPlanRecipe.objects.filter(
             meal_plan=meal_plan, is_deleted=False
         ).select_related('recipe')
+
+        for recipe in meal_plan_recipes:
+            image_id = recipe.recipe.image_id if recipe.recipe else None
+            image_service = ImageService(recipe.created_by)
+            image_url = image_service.get_image_url(
+                image_id) if image_id else None
+
+            recipe.image_url = image_url
 
         if not meal_plan_recipes:
             raise ValueError("No recipes found for the specified meal plan.")

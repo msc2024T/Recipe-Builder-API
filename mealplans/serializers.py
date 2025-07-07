@@ -18,8 +18,10 @@ class MealPlanRecipeSerializer(serializers.ModelSerializer):
     meal_plan = MealPlanSerializer(read_only=True)
     created_by = UserSerializer(read_only=True)
     recipe_id = serializers.IntegerField(write_only=True)
+    image_url = serializers.CharField(read_only=True)
 
     class Meta:
         model = MealPlanRecipe
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'created_by', 'is_deleted']
+        read_only_fields = ['id', 'created_at',
+                            'created_by', 'is_deleted', 'image_url']
