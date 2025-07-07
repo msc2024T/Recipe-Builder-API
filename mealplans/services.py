@@ -14,7 +14,7 @@ class MealPlanService:
         Retrieves the meal plans for the user.
         """
         meal_plans = MealPlan.objects.filter(
-            created_by=self.user).order_by('-created_at')
+            created_by=self.user, is_deleted=False).order_by('-created_at')
 
         if not meal_plans:
             raise ValueError("No meal plans found for the user.")
