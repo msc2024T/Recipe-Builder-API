@@ -26,14 +26,7 @@ class MealPlanRecipe(models.Model):
         MealPlan, on_delete=models.CASCADE, related_name='meal_plan_recipes')
     recipe = models.ForeignKey(
         'recipes.Recipe', on_delete=models.CASCADE, related_name='meal_plan_recipes')
-    meal_type = models.PositiveIntegerField(
-        choices=[
-            (0, 'Breakfast'),
-            (1, 'Lunch'),
-            (2, 'Dinner'),
-            (3, 'Snack')
-        ]
-    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         AuthUser, on_delete=models.CASCADE, related_name='meal_plan_recipe_entries'

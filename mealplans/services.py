@@ -100,9 +100,8 @@ class MealPlanRecipeService:
 
         for item in list:
             recipe_id = item.get('recipe_id')
-            meal_type = item.get('meal_type')
 
-            if not recipe_id or meal_type is None:
+            if not recipe_id is None:
                 raise ValueError(
                     "Recipe ID and meal type are required for each item.")
 
@@ -112,7 +111,7 @@ class MealPlanRecipeService:
             existing_item = MealPlanRecipe.objects.filter(
                 meal_plan=meal_plan,
                 recipe=recipe,
-                meal_type=meal_type,
+
                 is_deleted=False
             ).first()
 
@@ -125,7 +124,7 @@ class MealPlanRecipeService:
                 meal_plan_recipe = MealPlanRecipe.objects.create(
                     meal_plan=meal_plan,
                     recipe=recipe,
-                    meal_type=meal_type,
+
                     created_by=self.user
                 )
                 result.append(meal_plan_recipe)
