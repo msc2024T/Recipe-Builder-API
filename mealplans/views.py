@@ -40,6 +40,18 @@ class MealPlanView(APIView):
 
 class MealPlanDetailView(APIView):
 
+    def get(self, request, meal_plan_id):
+        """
+        Retrieves a specific meal plan by its ID.
+        """
+        try:
+            service = MealPlanService(user=request.user)
+            meal_plan = service.get_meal_plan_by_id(meal_plan_id)
+            serializer = MealPlanSerializer(meal_plan)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     def put(self, request, meal_plan_id):
         """
         Updates an existing meal plan.
