@@ -101,7 +101,7 @@ class MealPlanRecipeService:
         for item in list:
             recipe_id = item.get('recipe_id')
 
-            if not recipe_id is None:
+            if not recipe_id:
                 raise ValueError(
                     "Recipe ID and meal type are required for each item.")
 
